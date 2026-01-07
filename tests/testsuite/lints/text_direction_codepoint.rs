@@ -32,18 +32,42 @@ text_direction_codepoint_in_literal = \"allow\"
     p.cargo("check -Zcargo-lints")
         .masquerade_as_nightly_cargo(&["cargo-lints"])
         .with_stderr_data(str![[r#"
-[WARNING] unknown lint: `text_direction_codepoint_in_comment`
-  --> Cargo.toml:13:1
-   |
-13 | text_direction_codepoint_in_comment = "warn"
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = [NOTE] `cargo::unknown_lints` is set to `warn` by default
 [WARNING] unknown lint: `text_direction_codepoint_in_literal`
   --> Cargo.toml:14:1
    |
 14 | text_direction_codepoint_in_literal = "allow"
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = [NOTE] `cargo::unknown_lints` is set to `warn` by default
+[WARNING] unicode codepoint changing visible direction of text present in comment
+ --> Cargo.toml:7:51
+  |
+7 | description = "a �description� here"  # this is a �tricky� comment
+  |                                       ------------^------^--------
+  |                                       |           |      |
+  |                                       |           |      "/u{202c}"
+  |                                       |           "/u{202b}"
+  |                                       this comment contains an invisible unicode text flow control codepoint
+  |
+  = [NOTE] `cargo::text_direction_codepoint_in_comment` is set to `warn` in `[lints]`
+[WARNING] unicode codepoint changing visible direction of text present in comment
+ --> Cargo.toml:8:46
+  |
+8 | homepage = "a �homepage� there"  # this is a �tricky� comment
+  |                                  ------------^------^--------
+  |                                  |           |      |
+  |                                  |           |      "/u{202c}"
+  |                                  |           "/u{202b}"
+  |                                  this comment contains an invisible unicode text flow control codepoint
+[WARNING] unicode codepoint changing visible direction of text present in comment
+ --> Cargo.toml:9:55
+  |
+9 | repository = "a �repository� everywhere"  # this is a �tricky� comment
+  |                                           ------------^------^--------
+  |                                           |           |      |
+  |                                           |           |      "/u{202c}"
+  |                                           |           "/u{202b}"
+  |                                           this comment contains an invisible unicode text flow control codepoint
 [CHECKING] foo v0.0.1 ([ROOT]/foo)
 [FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 
@@ -71,18 +95,13 @@ text_direction_codepoint_in_literal = \"warn\"
     p.cargo("check -Zcargo-lints")
         .masquerade_as_nightly_cargo(&["cargo-lints"])
         .with_stderr_data(str![[r#"
-[WARNING] unknown lint: `text_direction_codepoint_in_comment`
-  --> Cargo.toml:13:1
-   |
-13 | text_direction_codepoint_in_comment = "allow"
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = [NOTE] `cargo::unknown_lints` is set to `warn` by default
 [WARNING] unknown lint: `text_direction_codepoint_in_literal`
   --> Cargo.toml:14:1
    |
 14 | text_direction_codepoint_in_literal = "warn"
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = [NOTE] `cargo::unknown_lints` is set to `warn` by default
 [CHECKING] foo v0.0.1 ([ROOT]/foo)
 [FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 
@@ -124,18 +143,42 @@ edition = \"2015\"
     p.cargo("check -Zcargo-lints")
         .masquerade_as_nightly_cargo(&["cargo-lints"])
         .with_stderr_data(str![[r#"
-[WARNING] unknown lint: `text_direction_codepoint_in_comment`
-  --> Cargo.toml:16:1
-   |
-16 | text_direction_codepoint_in_comment = "warn"
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = [NOTE] `cargo::unknown_lints` is set to `warn` by default
 [WARNING] unknown lint: `text_direction_codepoint_in_literal`
   --> Cargo.toml:17:1
    |
 17 | text_direction_codepoint_in_literal = "warn"
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = [NOTE] `cargo::unknown_lints` is set to `warn` by default
+[WARNING] unicode codepoint changing visible direction of text present in comment
+  --> Cargo.toml:10:51
+   |
+10 | description = "a �description� here"  # this is a �tricky� comment
+   |                                       ------------^------^--------
+   |                                       |           |      |
+   |                                       |           |      "/u{202c}"
+   |                                       |           "/u{202b}"
+   |                                       this comment contains an invisible unicode text flow control codepoint
+   |
+   = [NOTE] `cargo::text_direction_codepoint_in_comment` is set to `warn` in `[lints]`
+[WARNING] unicode codepoint changing visible direction of text present in comment
+  --> Cargo.toml:11:46
+   |
+11 | homepage = "a �homepage� there"  # this is a �tricky� comment
+   |                                  ------------^------^--------
+   |                                  |           |      |
+   |                                  |           |      "/u{202c}"
+   |                                  |           "/u{202b}"
+   |                                  this comment contains an invisible unicode text flow control codepoint
+[WARNING] unicode codepoint changing visible direction of text present in comment
+  --> Cargo.toml:12:55
+   |
+12 | repository = "a �repository� everywhere"  # this is a �tricky� comment
+   |                                           ------------^------^--------
+   |                                           |           |      |
+   |                                           |           |      "/u{202c}"
+   |                                           |           "/u{202b}"
+   |                                           this comment contains an invisible unicode text flow control codepoint
 [CHECKING] foo v0.0.1 ([ROOT]/foo)
 [FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 
@@ -186,18 +229,42 @@ workspace = true
     p.cargo("check -Zcargo-lints")
         .masquerade_as_nightly_cargo(&["cargo-lints"])
         .with_stderr_data(str![[r#"
-[WARNING] unknown lint: `text_direction_codepoint_in_comment`
-  --> Cargo.toml:11:1
-   |
-11 | text_direction_codepoint_in_comment = "warn"
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = [NOTE] `cargo::unknown_lints` is set to `warn` by default
 [WARNING] unknown lint: `text_direction_codepoint_in_literal`
   --> Cargo.toml:12:1
    |
 12 | text_direction_codepoint_in_literal = "warn"
    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = [NOTE] `cargo::unknown_lints` is set to `warn` by default
+[WARNING] unicode codepoint changing visible direction of text present in comment
+ --> Cargo.toml:6:51
+  |
+6 | description = "a �description� here"  # this is a �tricky� comment
+  |                                       ------------^------^--------
+  |                                       |           |      |
+  |                                       |           |      "/u{202c}"
+  |                                       |           "/u{202b}"
+  |                                       this comment contains an invisible unicode text flow control codepoint
+  |
+  = [NOTE] `cargo::text_direction_codepoint_in_comment` is set to `warn` in `[lints]`
+[WARNING] unicode codepoint changing visible direction of text present in comment
+ --> Cargo.toml:7:46
+  |
+7 | homepage = "a �homepage� there"  # this is a �tricky� comment
+  |                                  ------------^------^--------
+  |                                  |           |      |
+  |                                  |           |      "/u{202c}"
+  |                                  |           "/u{202b}"
+  |                                  this comment contains an invisible unicode text flow control codepoint
+[WARNING] unicode codepoint changing visible direction of text present in comment
+ --> Cargo.toml:8:55
+  |
+8 | repository = "a �repository� everywhere"  # this is a �tricky� comment
+  |                                           ------------^------^--------
+  |                                           |           |      |
+  |                                           |           |      "/u{202c}"
+  |                                           |           "/u{202b}"
+  |                                           this comment contains an invisible unicode text flow control codepoint
 [CHECKING] bar v0.0.1 ([ROOT]/foo/bar)
 [FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 
