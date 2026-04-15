@@ -7,7 +7,7 @@ use cargo_util_terminal::report::Patch;
 use cargo_util_terminal::report::Snippet;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
-use tracing::{instrument, trace};
+use tracing::{debug, instrument, trace};
 
 use super::BuildRunner;
 use super::unit::Unit;
@@ -216,11 +216,10 @@ impl UnusedDepState {
                     };
                     for dependency in dependency {
                         if ignore.contains(&dependency.name_in_toml()) {
-                            trace!(
-                                "pkg {} v{} ({dep_kind:?}): extern {} is ignored",
+                            debug!(
+                                "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, requested in manifest",
                                 pkg_id.name(),
                                 pkg_id.version(),
-                                ext
                             );
                             continue;
                         }
