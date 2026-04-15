@@ -84,7 +84,7 @@ impl UnusedDepState {
                 .or_default()
                 .entry(dep_kind)
                 .or_default();
-            state.needed_units += 1;
+            *state.needed_units.get_or_insert_default() += 1;
             for dep in build_runner.unit_deps(root).iter() {
                 trace!(
                     "    => {} (deps={})",
@@ -187,7 +187,18 @@ impl UnusedDepState {
             let manifest_path = rel_cwd_manifest_path(pkg.manifest_path(), build_runner.bcx.gctx);
             let mut lint_count = 0;
             for (dep_kind, state) in states.iter() {
-                if state.unused_externs.len() != state.needed_units {
+                let Some(needed_units) = state.needed_units else {
+                    // not one we care to report
+                    for ext in state.unused_externs.values().flatten() {
+                        debug!(
+                            "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, untracked dependent",
+                            pkg_id.name(),
+                            pkg_id.version(),
+                        );
+                    }
+                    continue;
+                };
+                if state.unused_externs.len() != needed_units {
                     // Some compilations errored without printing the unused externs.
                     // Don't print the warning in order to reduce false positive
                     // spam during errors.
@@ -196,7 +207,7 @@ impl UnusedDepState {
                             "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, {} outstanding units",
                             pkg_id.name(),
                             pkg_id.version(),
-                            state.needed_units - state.unused_externs.len()
+                            needed_units - state.unused_externs.len()
                         );
                     }
                     continue;
@@ -312,7 +323,7 @@ struct DependenciesState {
     ///
     /// To avoid warning in cases where we didn't,
     /// e.g. if a [`Unit`] errored and didn't report unused externs.
-    needed_units: usize,
+    needed_units: Option<usize>,
     /// As reported by rustc
     unused_externs: IndexMap<Unit, Vec<InternedString>>,
 }
