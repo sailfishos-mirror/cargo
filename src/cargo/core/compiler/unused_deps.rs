@@ -113,17 +113,17 @@ impl UnusedDepState {
             pkg_id.name(),
             pkg_id.version(),
         );
-        if let Some(state) = self
+        let state = self
             .states
-            .get_mut(&pkg_id)
-            .and_then(|s| s.get_mut(&dep_kind))
-        {
-            state
-                .unused_externs
-                .entry(unit.clone())
-                .or_default()
-                .extend(unused_externs.into_iter().map(|s| InternedString::new(&s)));
-        }
+            .entry(pkg_id)
+            .or_default()
+            .entry(dep_kind)
+            .or_default();
+        state
+            .unused_externs
+            .entry(unit.clone())
+            .or_default()
+            .extend(unused_externs.into_iter().map(|s| InternedString::new(&s)));
     }
 
     #[instrument(skip_all)]
