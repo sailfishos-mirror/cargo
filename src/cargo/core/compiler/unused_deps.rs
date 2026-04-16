@@ -98,7 +98,9 @@ impl UnusedDepState {
                 } else {
                     continue;
                 };
-                state.externs.insert(dep.extern_crate_name, manifest_deps);
+                state
+                    .externs
+                    .insert(dep.extern_crate_name, ExternState { manifest_deps });
             }
         }
 
@@ -213,7 +215,7 @@ impl UnusedDepState {
                     continue;
                 }
 
-                for (ext, dependency) in &state.externs {
+                for (ext, extern_state) in &state.externs {
                     if state
                         .unused_externs
                         .values()
@@ -229,7 +231,7 @@ impl UnusedDepState {
                     }
 
                     // Implicitly added dependencies (in the same crate) aren't interesting
-                    let dependency = if let Some(dependency) = dependency {
+                    let dependency = if let Some(dependency) = &extern_state.manifest_deps {
                         dependency
                     } else {
                         continue;
@@ -318,7 +320,7 @@ impl UnusedDepState {
 #[derive(Default)]
 struct DependenciesState {
     /// All declared dependencies
-    externs: IndexMap<InternedString, Option<Vec<Dependency>>>,
+    externs: IndexMap<InternedString, ExternState>,
     /// Expected [`Self::unused_externs`] entries to know we've received them all
     ///
     /// To avoid warning in cases where we didn't,
@@ -326,6 +328,11 @@ struct DependenciesState {
     needed_units: Option<usize>,
     /// As reported by rustc
     unused_externs: IndexMap<Unit, Vec<InternedString>>,
+}
+
+#[derive(Clone)]
+struct ExternState {
+    manifest_deps: Option<Vec<Dependency>>,
 }
 
 fn dep_kind_of(unit: &Unit) -> DepKind {
