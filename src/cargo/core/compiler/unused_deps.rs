@@ -188,7 +188,7 @@ impl UnusedDepState {
                         "pkg {} v{} ({dep_kind:?}): ignoring unused deps due to {} outstanding units",
                         pkg_id.name(),
                         pkg_id.version(),
-                        state.needed_units
+                        state.needed_units - state.unused_externs.len()
                     );
                     continue;
                 }
