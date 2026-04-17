@@ -7,7 +7,7 @@ use cargo_util_terminal::report::Patch;
 use cargo_util_terminal::report::Snippet;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
-use tracing::trace;
+use tracing::{instrument, trace};
 
 use super::BuildRunner;
 use super::unit::Unit;
@@ -30,6 +30,7 @@ pub struct UnusedDepState {
 }
 
 impl UnusedDepState {
+    #[instrument(name = "UnusedDepState::new", skip_all)]
     pub fn new(build_runner: &mut BuildRunner<'_, '_>) -> Self {
         let mut states = IndexMap::<_, IndexMap<_, DependenciesState>>::new();
 
@@ -122,6 +123,7 @@ impl UnusedDepState {
         }
     }
 
+    #[instrument(skip_all)]
     pub fn emit_unused_warnings(
         &self,
         warn_count: &mut usize,
