@@ -32,12 +32,9 @@ pub struct UnusedDepState {
 impl UnusedDepState {
     #[instrument(name = "UnusedDepState::new", skip_all)]
     pub fn new(build_runner: &mut BuildRunner<'_, '_>) -> Self {
-        let mut states = IndexMap::<_, IndexMap<_, DependenciesState>>::new();
-
-        let roots = &build_runner.bcx.roots;
-
         // Find all units for a package that can report unused externs
         let mut root_build_script_builds = IndexSet::new();
+        let roots = &build_runner.bcx.roots;
         for root in roots.iter() {
             for build_script_run in build_runner.unit_deps(root).iter() {
                 if !build_script_run.unit.target.is_custom_build()
@@ -63,6 +60,7 @@ impl UnusedDepState {
             "selected dep kinds: {:?}",
             build_runner.bcx.selected_dep_kinds
         );
+        let mut states = IndexMap::<_, IndexMap<_, DependenciesState>>::new();
         for root in roots.iter().chain(root_build_script_builds.iter()) {
             let pkg_id = root.pkg.package_id();
             let dep_kind = dep_kind_of(root);
