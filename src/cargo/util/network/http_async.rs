@@ -97,6 +97,17 @@ impl Client {
 
     /// Perform an HTTP request using this client.
     pub async fn request(&self, request: Request) -> HttpResult<Response> {
+        let handle = self.request_helper(request)?;
+        let (sender, receiver) = oneshot::channel();
+        let req = Message {
+            easy: handle,
+            sender,
+        };
+        self.channel.as_ref().unwrap().send(req).unwrap();
+        receiver.await.unwrap()
+    }
+
+    fn request_helper(&self, request: Request) -> HttpResult<Easy2<Collector>> {
         let url = request.uri().to_string();
         debug!(target: "network::fetch", url);
         let mut collector = Collector::new(self.stats.clone());
@@ -141,14 +152,7 @@ impl Client {
         }
         handle.http_headers(headers)?;
 
-        let (sender, receiver) = oneshot::channel();
-        let req = Message {
-            easy: handle,
-            sender,
-        };
-
-        self.channel.as_ref().unwrap().send(req).unwrap();
-        receiver.await.unwrap()
+        Ok(handle)
     }
 
     /// Returns the number pending bytes across all active transfers.
