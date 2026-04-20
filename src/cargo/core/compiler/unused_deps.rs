@@ -193,12 +193,14 @@ impl UnusedDepState {
                     // Some compilations errored without printing the unused externs.
                     // Don't print the warning in order to reduce false positive
                     // spam during errors.
-                    trace!(
-                        "pkg {} v{} ({dep_kind:?}): ignoring unused deps due to {} outstanding units",
-                        pkg_id.name(),
-                        pkg_id.version(),
-                        state.needed_units - state.unused_externs.len()
-                    );
+                    for ext in state.unused_externs.values().flatten() {
+                        debug!(
+                            "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, {} outstanding units",
+                            pkg_id.name(),
+                            pkg_id.version(),
+                            state.needed_units - state.unused_externs.len()
+                        );
+                    }
                     continue;
                 }
 
