@@ -95,6 +95,14 @@ impl Client {
         }
     }
 
+    /// Perform a blocking HTTP request using this client.
+    /// Does not start an async executor.
+    pub fn request_blocking(&self, request: Request) -> HttpResult<Response> {
+        let handle = self.request_helper(request)?;
+        handle.perform()?;
+        Ok(WorkerServer::process_response(handle))
+    }
+
     /// Perform an HTTP request using this client.
     pub async fn request(&self, request: Request) -> HttpResult<Response> {
         let handle = self.request_helper(request)?;
