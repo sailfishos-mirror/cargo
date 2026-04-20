@@ -242,6 +242,24 @@ impl WorkerServer {
         }
     }
 
+    fn process_response(mut easy: Easy2<Collector>) -> Response {
+        let mut response =
+            std::mem::replace(&mut easy.get_mut().response, Response::new(Vec::new()));
+        if let Ok(status) = easy.response_code()
+            && status != 0
+            && let Ok(status) = http::StatusCode::from_u16(status as u16)
+        {
+            *response.status_mut() = status;
+        }
+        // Would be nice to set HTTP version via `response.version_mut()`, but `curl` doesn't have it exposed.
+        let extensions = Extensions {
+            client_ip: easy.primary_ip().ok().flatten().map(str::to_string),
+            effective_url: easy.effective_url().ok().flatten().map(str::to_string),
+        };
+        response.extensions_mut().insert(extensions);
+        response
+    }
+
     /// Marks the start of a new timeout window.
     fn reset_low_speed_timeout(&mut self) {
         self.low_speed_window_start = Instant::now();
@@ -297,23 +315,8 @@ impl WorkerServer {
                             return;
                         };
                         let result = msg.result_for2(&handle).expect("handle must have a result");
-                        let mut easy = self.multi.remove2(handle).expect("handle must be in multi");
-                        let mut response = std::mem::replace(
-                            &mut easy.get_mut().response,
-                            Response::new(Vec::new()),
-                        );
-                        if let Ok(status) = easy.response_code()
-                            && status != 0
-                            && let Ok(status) = http::StatusCode::from_u16(status as u16)
-                        {
-                            *response.status_mut() = status;
-                        }
-                        // Would be nice to set HTTP version via `response.version_mut()`, but `curl` doesn't have it exposed.
-                        let extensions = Extensions {
-                            client_ip: easy.primary_ip().ok().flatten().map(str::to_string),
-                            effective_url: easy.effective_url().ok().flatten().map(str::to_string),
-                        };
-                        response.extensions_mut().insert(extensions);
+                        let easy = self.multi.remove2(handle).expect("handle must be in multi");
+                        let response = Self::process_response(easy);
                         let _ = sender.send(result.map(|()| response).map_err(Into::into));
                     });
 
