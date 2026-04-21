@@ -26,9 +26,6 @@
 
 pub mod env;
 
-#[cfg(target_os = "windows")]
-mod windows;
-
 use std::io;
 use std::path::{Path, PathBuf};
 
@@ -66,12 +63,8 @@ pub fn home_dir() -> Option<PathBuf> {
     env::home_dir_with_env(&env::OS_ENV)
 }
 
-#[cfg(windows)]
-use windows::home_dir_inner;
-
-#[cfg(unix)]
+#[inline]
 fn home_dir_inner() -> Option<PathBuf> {
-    #[allow(deprecated)]
     std::env::home_dir()
 }
 
