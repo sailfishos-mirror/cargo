@@ -157,6 +157,15 @@ impl UnusedDepState {
             );
 
             if lint_level == LintLevel::Allow {
+                for (dep_kind, state) in states.iter() {
+                    for ext in state.unused_externs.values().flatten() {
+                        debug!(
+                            "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, lint is allowed",
+                            pkg_id.name(),
+                            pkg_id.version(),
+                        );
+                    }
+                }
                 continue;
             }
 
