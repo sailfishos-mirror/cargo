@@ -142,7 +142,7 @@ fn help_man_temp_file_extension() {
     cargo_process("help build")
         .env("PATH", &p.target_debug_dir())
         .with_stdout_data(str![[r#"
-no .1 extension
+has .1 extension
 
 "#]])
         .run();
