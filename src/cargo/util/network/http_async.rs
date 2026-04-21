@@ -98,7 +98,10 @@ impl Client {
     /// Perform a blocking HTTP request using this client.
     /// Does not start an async executor.
     pub fn request_blocking(&self, request: Request) -> HttpResult<Response> {
-        let handle = self.request_helper(request)?;
+        let mut handle = self.request_helper(request)?;
+        // Configure the handle timeout since we're blocking here and not using the
+        // client-level timeout.
+        self.handle_config.timeout.configure2(&mut handle)?;
         handle.perform()?;
         Ok(WorkerServer::process_response(handle))
     }
