@@ -108,8 +108,12 @@ impl UnusedDepState {
 
     pub fn record_unused_externs_for_unit(&mut self, unit: &Unit, unused_externs: Vec<String>) {
         let pkg_id = unit.pkg.package_id();
-        let kind = dep_kind_of(unit);
-        if let Some(state) = self.states.get_mut(&pkg_id).and_then(|s| s.get_mut(&kind)) {
+        let dep_kind = dep_kind_of(unit);
+        if let Some(state) = self
+            .states
+            .get_mut(&pkg_id)
+            .and_then(|s| s.get_mut(&dep_kind))
+        {
             state
                 .unused_externs
                 .entry(unit.clone())
