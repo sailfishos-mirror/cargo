@@ -1320,17 +1320,6 @@ pub fn fun() -> &'static str {
 [CHECKING] transitive v0.1.1
 [CHECKING] intermediate v0.1.0
 [CHECKING] foo v0.1.0 ([ROOT]/foo)
-[WARNING] unused dependency
-  --> Cargo.toml:10:13
-   |
-10 |             transitive = { version = "0.1.1", features = ["a"] }
-   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = [NOTE] `cargo::unused_dependencies` is set to `warn` in `[lints]`
-[HELP] remove the dependency
-   |
-10 -             transitive = { version = "0.1.1", features = ["a"] }
-   |
 [FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 
 "#]]
