@@ -138,6 +138,7 @@ struct Crates {
 
 /// Error returned when interacting with a registry.
 #[derive(Debug, thiserror::Error)]
+#[non_exhaustive]
 pub enum Error {
     /// Error from libcurl.
     #[error(transparent)]
