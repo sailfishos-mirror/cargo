@@ -179,9 +179,8 @@ pub enum Error {
         body: String,
     },
 
-    /// Reason why the token was invalid.
-    #[error("{0}")]
-    InvalidToken(&'static str),
+    #[error(transparent)]
+    InvalidToken(#[from] TokenError),
 
     /// Server was unavailable and timed out. Happened when uploading a way
     /// too large tarball to crates.io.
@@ -227,9 +226,7 @@ impl Registry {
     }
 
     fn token(&self) -> Result<&str> {
-        let token = self.token.as_ref().ok_or_else(|| {
-            Error::InvalidToken("no upload token found, please run `cargo login`")
-        })?;
+        let token = self.token.as_ref().ok_or_else(|| TokenError::Missing)?;
         check_token(token)?;
         Ok(token)
     }
@@ -523,14 +520,29 @@ pub fn is_url_crates_io(url: &str) -> bool {
         .unwrap_or(false)
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum TokenError {
+    #[error("no upload token found, please run `cargo login`")]
+    Missing,
+
+    #[error("please provide a non-empty token")]
+    Empty,
+
+    #[error(
+        "token contains invalid characters.\nOnly printable ISO-8859-1 characters \
+             are allowed as it is sent in a HTTPS header."
+    )]
+    InvalidCharacters,
+}
+
 /// Checks if a token is valid or malformed.
 ///
 /// This check is necessary to prevent sending tokens which create an invalid HTTP request.
 /// It would be easier to check just for alphanumeric tokens, but we can't be sure that all
 /// registries only create tokens in that format so that is as less restricted as possible.
-pub fn check_token(token: &str) -> Result<()> {
+pub fn check_token(token: &str) -> std::result::Result<(), TokenError> {
     if token.is_empty() {
-        return Err(Error::InvalidToken("please provide a non-empty token"));
+        return Err(TokenError::Empty);
     }
     if token.bytes().all(|b| {
         // This is essentially the US-ASCII limitation of
@@ -541,9 +553,6 @@ pub fn check_token(token: &str) -> Result<()> {
     }) {
         Ok(())
     } else {
-        Err(Error::InvalidToken(
-            "token contains invalid characters.\nOnly printable ISO-8859-1 characters \
-             are allowed as it is sent in a HTTPS header.",
-        ))
+        Err(TokenError::InvalidCharacters)
     }
 }
