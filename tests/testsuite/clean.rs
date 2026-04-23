@@ -1450,3 +1450,21 @@ fn config_target_dir_tag_valid() {
 
     p.cargo("clean").run();
 }
+
+#[cargo_test]
+fn explicit_target_dir_not_exists() {
+    let p = project()
+        .file("Cargo.toml", &basic_bin_manifest("foo"))
+        .file("src/foo.rs", &main_file(r#""i am foo""#, &[]))
+        .build();
+
+    p.cargo("clean --target-dir bar")
+        .with_stderr_data(str![[r#"
+[ERROR] cannot clean `[ROOT]/foo/bar`: missing or invalid `CACHEDIR.TAG` file
+  |
+  = [NOTE] cleaning has been aborted to prevent accidental deletion of unrelated files
+
+"#]])
+        .with_status(101)
+        .run();
+}
