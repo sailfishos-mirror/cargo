@@ -1329,58 +1329,6 @@ pub fn fun() -> &'static str {
 }
 
 #[cargo_test]
-fn config_ignore() {
-    // The most basic case where there is an unused dependency
-    Package::new("unused_build", "0.1.0").publish();
-    Package::new("unused", "0.1.0").publish();
-    let p = project()
-        .file(
-            "Cargo.toml",
-            r#"
-            [package]
-            name = "foo"
-            version = "0.1.0"
-            authors = []
-            edition = "2018"
-
-            [build-dependencies]
-            unused_build = "0.1.0"
-
-            [dependencies]
-            unused_renamed = { package = "unused", version = "0.1.0" }
-
-            [lints.cargo]
-            unused_dependencies = { level = "warn", ignore = ["unused_build", "unused_renamed"] }
-        "#,
-        )
-        .file(
-            "src/main.rs",
-            r#"
-            fn main() {}
-            "#,
-        )
-        .build();
-
-    p.cargo("check -Zcargo-lints")
-        .masquerade_as_nightly_cargo(&["cargo-lints"])
-        .with_stderr_data(
-            str![[r#"
-[UPDATING] `dummy-registry` index
-[LOCKING] 2 packages to latest compatible versions
-[DOWNLOADING] crates ...
-[DOWNLOADED] unused_build v0.1.0 (registry `dummy-registry`)
-[DOWNLOADED] unused v0.1.0 (registry `dummy-registry`)
-[CHECKING] unused v0.1.0
-[CHECKING] foo v0.1.0 ([ROOT]/foo)
-[FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
-
-"#]]
-            .unordered(),
-        )
-        .run();
-}
-
-#[cargo_test]
 fn allow_rustflags() {
     // The most basic case where there is an unused dependency
     Package::new("unused", "0.1.0").publish();

@@ -173,23 +173,6 @@ impl UnusedDepState {
                 continue;
             }
 
-            let mut ignore = Vec::new();
-            if let Some(unused_dependencies) = cargo_lints.get("unused_dependencies") {
-                if let Some(config) = unused_dependencies.config() {
-                    if let Some(config_ignore) = config.get("ignore") {
-                        if let Ok(config_ignore) =
-                            toml::Value::try_into::<Vec<InternedString>>(config_ignore.clone())
-                        {
-                            ignore = config_ignore
-                        } else {
-                            anyhow::bail!(
-                                "`lints.cargo.unused_dependencies.ignore` must be a list of string"
-                            );
-                        }
-                    }
-                }
-            }
-
             let manifest_path = rel_cwd_manifest_path(pkg.manifest_path(), build_runner.bcx.gctx);
             let mut lint_count = 0;
             for (dep_kind, state) in states.iter() {
@@ -249,15 +232,6 @@ impl UnusedDepState {
                         continue;
                     };
                     for dependency in dependency {
-                        if ignore.contains(&dependency.name_in_toml()) {
-                            debug!(
-                                "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, requested in manifest",
-                                pkg_id.name(),
-                                pkg_id.version(),
-                            );
-                            continue;
-                        }
-
                         let manifest = pkg.manifest();
                         let document = manifest.document();
                         let contents = manifest.contents();
