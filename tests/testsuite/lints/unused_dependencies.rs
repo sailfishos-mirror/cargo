@@ -968,7 +968,9 @@ fn package_selection() {
     Package::new("used_bar", "0.1.0").publish();
     Package::new("used_foo", "0.1.0").publish();
     Package::new("used_external", "0.1.0").publish();
-    Package::new("unused", "0.1.0").publish();
+    Package::new("unused_bar", "0.1.0").publish();
+    Package::new("unused_foo", "0.1.0").publish();
+    Package::new("unused_external", "0.1.0").publish();
     let p = project()
         .file(
             "Cargo.toml",
@@ -988,7 +990,7 @@ fn package_selection() {
             edition = "2018"
 
             [dependencies]
-            unused = "0.1.0"
+            unused_foo = "0.1.0"
             used_foo = "0.1.0"
             bar.path = "../bar"
             external.path = "../external"
@@ -1013,7 +1015,7 @@ fn package_selection() {
             edition = "2018"
 
             [dependencies]
-            unused = "0.1.0"
+            unused_bar = "0.1.0"
             used_bar = "0.1.0"
 
             [lints.cargo]
@@ -1036,7 +1038,7 @@ fn package_selection() {
             edition = "2018"
 
             [dependencies]
-            unused = "0.1.0"
+            unused_external = "0.1.0"
             used_external = "0.1.0"
 
             [lints.cargo]
@@ -1056,30 +1058,33 @@ fn package_selection() {
         .with_stderr_data(
             str![[r#"
 [UPDATING] `dummy-registry` index
+[LOCKING] 7 packages to latest compatible versions
 [DOWNLOADING] crates ...
-[CHECKING] bar v0.1.0 ([ROOT]/foo/bar)
-[FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
-[LOCKING] 5 packages to latest compatible versions
-[DOWNLOADED] used_foo v0.1.0 (registry `dummy-registry`)
-[DOWNLOADED] used_external v0.1.0 (registry `dummy-registry`)
+[DOWNLOADED] unused_bar v0.1.0 (registry `dummy-registry`)
+[DOWNLOADED] unused_external v0.1.0 (registry `dummy-registry`)
+[DOWNLOADED] unused_foo v0.1.0 (registry `dummy-registry`)
 [DOWNLOADED] used_bar v0.1.0 (registry `dummy-registry`)
-[DOWNLOADED] unused v0.1.0 (registry `dummy-registry`)
-[CHECKING] unused v0.1.0
+[DOWNLOADED] used_external v0.1.0 (registry `dummy-registry`)
+[DOWNLOADED] used_foo v0.1.0 (registry `dummy-registry`)
 [CHECKING] used_bar v0.1.0
+[CHECKING] unused_external v0.1.0
 [CHECKING] used_external v0.1.0
+[CHECKING] unused_bar v0.1.0
 [CHECKING] used_foo v0.1.0
+[CHECKING] unused_foo v0.1.0
+[CHECKING] bar v0.1.0 ([ROOT]/foo/bar)
 [CHECKING] external v0.1.0 ([ROOT]/foo/external)
 [CHECKING] foo v0.1.0 ([ROOT]/foo/foo)
 [WARNING] unused dependency
  --> bar/Cargo.toml:9:13
   |
-9 |             unused = "0.1.0"
-  |             ^^^^^^^^^^^^^^^^
+9 |             unused_bar = "0.1.0"
+  |             ^^^^^^^^^^^^^^^^^^^^
   |
   = [NOTE] `cargo::unused_dependencies` is set to `warn` in `[lints]`
 [HELP] remove the dependency
   |
-9 -             unused = "0.1.0"
+9 -             unused_bar = "0.1.0"
   |
 [WARNING] unused dependency
   --> foo/Cargo.toml:11:13
@@ -1107,13 +1112,14 @@ fn package_selection() {
 [WARNING] unused dependency
  --> foo/Cargo.toml:9:13
   |
-9 |             unused = "0.1.0"
-  |             ^^^^^^^^^^^^^^^^
+9 |             unused_foo = "0.1.0"
+  |             ^^^^^^^^^^^^^^^^^^^^
   |
 [HELP] remove the dependency
   |
-9 -             unused = "0.1.0"
+9 -             unused_foo = "0.1.0"
   |
+[FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 
 "#]]
             .unordered(),
@@ -1124,7 +1130,6 @@ fn package_selection() {
         .masquerade_as_nightly_cargo(&["cargo-lints"])
         .with_stderr_data(
             str![[r#"
-[FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 [WARNING] unused dependency
   --> foo/Cargo.toml:11:13
    |
@@ -1151,13 +1156,14 @@ fn package_selection() {
 [WARNING] unused dependency
  --> foo/Cargo.toml:9:13
   |
-9 |             unused = "0.1.0"
-  |             ^^^^^^^^^^^^^^^^
+9 |             unused_foo = "0.1.0"
+  |             ^^^^^^^^^^^^^^^^^^^^
   |
 [HELP] remove the dependency
   |
-9 -             unused = "0.1.0"
+9 -             unused_foo = "0.1.0"
   |
+[FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 
 "#]]
             .unordered(),
@@ -1168,18 +1174,18 @@ fn package_selection() {
         .masquerade_as_nightly_cargo(&["cargo-lints"])
         .with_stderr_data(
             str![[r#"
-[FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 [WARNING] unused dependency
  --> bar/Cargo.toml:9:13
   |
-9 |             unused = "0.1.0"
-  |             ^^^^^^^^^^^^^^^^
+9 |             unused_bar = "0.1.0"
+  |             ^^^^^^^^^^^^^^^^^^^^
   |
   = [NOTE] `cargo::unused_dependencies` is set to `warn` in `[lints]`
 [HELP] remove the dependency
   |
-9 -             unused = "0.1.0"
+9 -             unused_bar = "0.1.0"
   |
+[FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 
 "#]]
             .unordered(),
@@ -1314,17 +1320,6 @@ pub fn fun() -> &'static str {
 [CHECKING] transitive v0.1.1
 [CHECKING] intermediate v0.1.0
 [CHECKING] foo v0.1.0 ([ROOT]/foo)
-[WARNING] unused dependency
-  --> Cargo.toml:10:13
-   |
-10 |             transitive = { version = "0.1.1", features = ["a"] }
-   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = [NOTE] `cargo::unused_dependencies` is set to `warn` in `[lints]`
-[HELP] remove the dependency
-   |
-10 -             transitive = { version = "0.1.1", features = ["a"] }
-   |
 [FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 
 "#]]
