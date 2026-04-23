@@ -145,8 +145,10 @@ impl Client {
                 handle.put(true)?;
             }
             method => {
-                handle.upload(true)?;
-                handle.in_filesize(body_len as u64)?;
+                if body_len > 0 {
+                    handle.upload(true)?;
+                    handle.in_filesize(body_len as u64)?;
+                }
                 handle.custom_request(method.as_str())?;
             }
         }
