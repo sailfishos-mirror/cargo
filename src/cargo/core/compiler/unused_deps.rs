@@ -184,6 +184,22 @@ impl UnusedDepState {
             let mut lint_count = 0;
             for (dep_kind, state) in states.iter() {
                 for ext in state.unused_externs.iter().flatten() {
+                    match dep_kind {
+                        DepKind::Normal => {}
+                        DepKind::Development => {
+                            if let Some(state) = states.get(&DepKind::Normal)
+                                && state.externs.contains_key(ext)
+                            {
+                                trace!(
+                                    "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, inherited from normal dependency",
+                                    pkg_id.name(),
+                                    pkg_id.version(),
+                                );
+                                continue;
+                            }
+                        }
+                        DepKind::Build => {}
+                    }
                     let Some(extern_state) = state.externs.get(ext) else {
                         // not one we care to report
                         debug!(
