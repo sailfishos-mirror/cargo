@@ -111,7 +111,11 @@ impl UnusedDepState {
         Self { states }
     }
 
-    pub fn record_unused_externs_for_unit(&mut self, unit: &Unit, unused_externs: Vec<String>) {
+    pub fn record_unused_externs_for_unit(
+        &mut self,
+        unit: &Unit,
+        unused_externs: Vec<InternedString>,
+    ) {
         let pkg_id = unit.pkg.package_id();
         let dep_kind = dep_kind_of(unit);
         trace!(
@@ -129,7 +133,7 @@ impl UnusedDepState {
             .unused_externs
             .entry(unit.clone())
             .or_default()
-            .extend(unused_externs.into_iter().map(|s| InternedString::new(&s)));
+            .extend(unused_externs);
     }
 
     #[instrument(skip_all)]
