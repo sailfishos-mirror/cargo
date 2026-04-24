@@ -131,11 +131,12 @@ impl UnusedDepState {
             .or_default()
             .entry(dep_kind)
             .or_default();
-        state
-            .unused_externs
-            .entry(unit.clone())
-            .or_default()
-            .extend(unused_externs);
+        state.seen_units.push(unit.clone());
+        if let Some(existing) = state.unused_externs.as_mut() {
+            existing.retain(|ext| unused_externs.contains(ext));
+        } else {
+            state.unused_externs = Some(unused_externs);
+        }
     }
 
     #[instrument(skip_all)]
@@ -168,7 +169,7 @@ impl UnusedDepState {
 
             if lint_level == LintLevel::Allow {
                 for (dep_kind, state) in states.iter() {
-                    for ext in state.unused_externs.values().flatten() {
+                    for ext in state.unused_externs.iter().flatten() {
                         debug!(
                             "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, lint is allowed",
                             pkg_id.name(),
@@ -184,7 +185,7 @@ impl UnusedDepState {
             for (dep_kind, state) in states.iter() {
                 let Some(needed_units) = state.needed_units else {
                     // not one we care to report
-                    for ext in state.unused_externs.values().flatten() {
+                    for ext in state.unused_externs.iter().flatten() {
                         debug!(
                             "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, untracked dependent",
                             pkg_id.name(),
@@ -193,16 +194,16 @@ impl UnusedDepState {
                     }
                     continue;
                 };
-                if state.unused_externs.len() != needed_units {
+                if state.seen_units.len() != needed_units {
                     // Some compilations errored without printing the unused externs.
                     // Don't print the warning in order to reduce false positive
                     // spam during errors.
-                    for ext in state.unused_externs.values().flatten() {
+                    for ext in state.unused_externs.iter().flatten() {
                         debug!(
                             "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, {} outstanding units",
                             pkg_id.name(),
                             pkg_id.version(),
-                            needed_units - state.unused_externs.len()
+                            needed_units - state.seen_units.len()
                         );
                     }
                     continue;
@@ -211,8 +212,8 @@ impl UnusedDepState {
                 for (ext, extern_state) in &state.externs {
                     if state
                         .unused_externs
-                        .values()
-                        .any(|unused| !unused.contains(ext))
+                        .as_ref()
+                        .is_some_and(|unused| !unused.contains(ext))
                     {
                         trace!(
                             "pkg {} v{} ({dep_kind:?}): extern {} is used",
@@ -222,7 +223,7 @@ impl UnusedDepState {
                         );
                         continue;
                     }
-                    if is_transitive_dep(&extern_state.unit, &state.unused_externs, build_runner) {
+                    if is_transitive_dep(&extern_state.unit, &state.seen_units, build_runner) {
                         debug!(
                             "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, may be activating features",
                             pkg_id.name(),
@@ -302,7 +303,7 @@ impl UnusedDepState {
         let state = self.states.get(pkg_id)?;
         let mut iter = state.values();
         let state = iter.next()?;
-        let mut iter = state.unused_externs.keys();
+        let mut iter = state.seen_units.iter();
         let unit = iter.next()?;
         Some(&unit.pkg)
     }
@@ -313,13 +314,15 @@ impl UnusedDepState {
 struct DependenciesState {
     /// All declared dependencies
     externs: IndexMap<InternedString, ExternState>,
-    /// Expected [`Self::unused_externs`] entries to know we've received them all
+    /// Expected [`Self::seen_units`] entries to know we've received them all
     ///
     /// To avoid warning in cases where we didn't,
     /// e.g. if a [`Unit`] errored and didn't report unused externs.
     needed_units: Option<usize>,
-    /// As reported by rustc
-    unused_externs: IndexMap<Unit, Vec<InternedString>>,
+    /// Units that have reported their unused externs
+    seen_units: Vec<Unit>,
+    /// Intersection of unused externs across all [`Self::seen_units`]
+    unused_externs: Option<BTreeSet<InternedString>>,
 }
 
 #[derive(Clone)]
@@ -356,11 +359,11 @@ fn unit_desc(unit: &Unit) -> String {
 #[instrument(skip_all)]
 fn is_transitive_dep(
     direct_dep_unit: &Unit,
-    unused_externs: &IndexMap<Unit, Vec<InternedString>>,
+    seen_units: &Vec<Unit>,
     build_runner: &mut BuildRunner<'_, '_>,
 ) -> bool {
     let mut queue = std::collections::VecDeque::new();
-    for root_unit in unused_externs.keys() {
+    for root_unit in seen_units {
         for unit_dep in build_runner.unit_deps(root_unit) {
             if root_unit.pkg.package_id() == unit_dep.unit.pkg.package_id() {
                 continue;
