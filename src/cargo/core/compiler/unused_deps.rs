@@ -209,20 +209,16 @@ impl UnusedDepState {
                     continue;
                 }
 
-                for (ext, extern_state) in &state.externs {
-                    if state
-                        .unused_externs
-                        .as_ref()
-                        .is_some_and(|unused| !unused.contains(ext))
-                    {
-                        trace!(
-                            "pkg {} v{} ({dep_kind:?}): extern {} is used",
+                for ext in state.unused_externs.iter().flatten() {
+                    let Some(extern_state) = state.externs.get(ext) else {
+                        // not one we care to report
+                        debug!(
+                            "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, untracked dependent",
                             pkg_id.name(),
                             pkg_id.version(),
-                            ext
                         );
                         continue;
-                    }
+                    };
                     if is_transitive_dep(&extern_state.unit, &state.seen_units, build_runner) {
                         debug!(
                             "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, may be activating features",
