@@ -1,3 +1,5 @@
+use std::collections::BTreeSet;
+
 use cargo_util_schemas::manifest;
 use cargo_util_terminal::report::AnnotationKind;
 use cargo_util_terminal::report::Group;
@@ -114,7 +116,7 @@ impl UnusedDepState {
     pub fn record_unused_externs_for_unit(
         &mut self,
         unit: &Unit,
-        unused_externs: Vec<InternedString>,
+        unused_externs: BTreeSet<InternedString>,
     ) {
         let pkg_id = unit.pkg.package_id();
         let dep_kind = dep_kind_of(unit);

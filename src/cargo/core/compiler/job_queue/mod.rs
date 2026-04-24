@@ -388,7 +388,7 @@ enum Message {
     Finish(JobId, Artifact, CargoResult<()>),
     FutureIncompatReport(JobId, Vec<FutureBreakageItem>),
     SectionTiming(JobId, SectionTiming),
-    UnusedExterns(JobId, Vec<InternedString>),
+    UnusedExterns(JobId, std::collections::BTreeSet<InternedString>),
 }
 
 impl<'gctx> JobQueue<'gctx> {

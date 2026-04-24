@@ -225,7 +225,7 @@ impl<'a, 'gctx> JobState<'a, 'gctx> {
     ///
     /// This is useful for checking unused dependencies.
     /// Should only be called once, as the compiler only emits it once per compilation.
-    pub fn unused_externs(&self, unused_externs: Vec<InternedString>) {
+    pub fn unused_externs(&self, unused_externs: std::collections::BTreeSet<InternedString>) {
         self.messages
             .push(Message::UnusedExterns(self.id, unused_externs));
     }
