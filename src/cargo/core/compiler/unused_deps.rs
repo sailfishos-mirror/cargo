@@ -86,7 +86,7 @@ impl UnusedDepState {
                 .or_default()
                 .entry(dep_kind)
                 .or_default();
-            *state.needed_units.get_or_insert_default() += 1;
+            state.needed_units += 1;
             for dep in build_runner.unit_deps(root).iter() {
                 trace!(
                     "    => {} (deps={})",
@@ -193,16 +193,12 @@ impl UnusedDepState {
                         );
                         continue;
                     };
-                    let Some(needed_units) = state.needed_units else {
-                        // not one we care to report
-                        debug!(
-                            "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, untracked dependent",
-                            pkg_id.name(),
-                            pkg_id.version(),
+                    if state.seen_units.len() != state.needed_units {
+                        debug_assert_ne!(
+                            state.externs.len(),
+                            0,
+                            "assumes tracked is checked first"
                         );
-                        continue;
-                    };
-                    if state.seen_units.len() != needed_units {
                         // Some compilations errored without printing the unused externs.
                         // Don't print the warning in order to reduce false positive
                         // spam during errors.
@@ -210,7 +206,7 @@ impl UnusedDepState {
                             "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, {} outstanding units",
                             pkg_id.name(),
                             pkg_id.version(),
-                            needed_units - state.seen_units.len()
+                            state.needed_units - state.seen_units.len()
                         );
                         continue;
                     }
@@ -309,7 +305,7 @@ struct DependenciesState {
     ///
     /// To avoid warning in cases where we didn't,
     /// e.g. if a [`Unit`] errored and didn't report unused externs.
-    needed_units: Option<usize>,
+    needed_units: usize,
     /// Units that have reported their unused externs
     seen_units: Vec<Unit>,
     /// Intersection of unused externs across all [`Self::seen_units`]
