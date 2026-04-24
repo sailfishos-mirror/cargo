@@ -183,33 +183,28 @@ impl UnusedDepState {
             let manifest_path = rel_cwd_manifest_path(pkg.manifest_path(), build_runner.bcx.gctx);
             let mut lint_count = 0;
             for (dep_kind, state) in states.iter() {
-                let Some(needed_units) = state.needed_units else {
-                    // not one we care to report
-                    for ext in state.unused_externs.iter().flatten() {
+                for ext in state.unused_externs.iter().flatten() {
+                    let Some(needed_units) = state.needed_units else {
+                        // not one we care to report
                         debug!(
                             "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, untracked dependent",
                             pkg_id.name(),
                             pkg_id.version(),
                         );
-                    }
-                    continue;
-                };
-                if state.seen_units.len() != needed_units {
-                    // Some compilations errored without printing the unused externs.
-                    // Don't print the warning in order to reduce false positive
-                    // spam during errors.
-                    for ext in state.unused_externs.iter().flatten() {
+                        continue;
+                    };
+                    if state.seen_units.len() != needed_units {
+                        // Some compilations errored without printing the unused externs.
+                        // Don't print the warning in order to reduce false positive
+                        // spam during errors.
                         debug!(
                             "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, {} outstanding units",
                             pkg_id.name(),
                             pkg_id.version(),
                             needed_units - state.seen_units.len()
                         );
+                        continue;
                     }
-                    continue;
-                }
-
-                for ext in state.unused_externs.iter().flatten() {
                     let Some(extern_state) = state.externs.get(ext) else {
                         // not one we care to report
                         debug!(
