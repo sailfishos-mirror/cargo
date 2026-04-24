@@ -184,6 +184,15 @@ impl UnusedDepState {
             let mut lint_count = 0;
             for (dep_kind, state) in states.iter() {
                 for ext in state.unused_externs.iter().flatten() {
+                    let Some(extern_state) = state.externs.get(ext) else {
+                        // not one we care to report
+                        debug!(
+                            "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, untracked dependent",
+                            pkg_id.name(),
+                            pkg_id.version(),
+                        );
+                        continue;
+                    };
                     let Some(needed_units) = state.needed_units else {
                         // not one we care to report
                         debug!(
@@ -205,15 +214,6 @@ impl UnusedDepState {
                         );
                         continue;
                     }
-                    let Some(extern_state) = state.externs.get(ext) else {
-                        // not one we care to report
-                        debug!(
-                            "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, untracked dependent",
-                            pkg_id.name(),
-                            pkg_id.version(),
-                        );
-                        continue;
-                    };
                     if is_transitive_dep(&extern_state.unit, &state.seen_units, build_runner) {
                         debug!(
                             "pkg {} v{} ({dep_kind:?}): ignoring unused extern `{ext}`, may be activating features",
