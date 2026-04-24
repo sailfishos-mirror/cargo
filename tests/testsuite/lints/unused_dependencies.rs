@@ -420,6 +420,7 @@ fn unused_dep_normal_but_implicit_used_dep_dev() {
   |
 9 -             used_dev = "0.1.0"
   |
+[HELP] to still use for development builds, move to `dev-dependencies`
 [FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 
 "#]])

@@ -184,8 +184,18 @@ impl UnusedDepState {
             let mut lint_count = 0;
             for (dep_kind, state) in states.iter() {
                 for ext in state.unused_externs.iter().flatten() {
+                    let mut used_in_dev = false;
                     match dep_kind {
-                        DepKind::Normal => {}
+                        DepKind::Normal => {
+                            if let Some(state) = states.get(&DepKind::Development)
+                                && state
+                                    .unused_externs
+                                    .as_ref()
+                                    .is_some_and(|ue| !ue.contains(ext))
+                            {
+                                used_in_dev = true;
+                            }
+                        }
                         DepKind::Development => {
                             if let Some(state) = states.get(&DepKind::Normal)
                                 && state.externs.contains_key(ext)
@@ -281,6 +291,12 @@ impl UnusedDepState {
                                     .path(&manifest_path)
                                     .patch(Patch::new(span, "")),
                             );
+                            report.push(help);
+                        }
+                        if used_in_dev {
+                            let help = Group::with_title(Level::HELP.secondary_title(
+                                "to still use for development builds, move to `dev-dependencies`",
+                            ));
                             report.push(help);
                         }
 
