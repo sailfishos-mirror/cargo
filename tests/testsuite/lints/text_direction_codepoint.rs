@@ -32,13 +32,6 @@ text_direction_codepoint_in_literal = \"allow\"
     p.cargo("check -Zcargo-lints")
         .masquerade_as_nightly_cargo(&["cargo-lints"])
         .with_stderr_data(str![[r#"
-[WARNING] unknown lint: `text_direction_codepoint_in_literal`
-  --> Cargo.toml:14:1
-   |
-14 | text_direction_codepoint_in_literal = "allow"
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = [NOTE] `cargo::unknown_lints` is set to `warn` by default
 [WARNING] unicode codepoint changing visible direction of text present in comment
  --> Cargo.toml:7:51
   |
@@ -95,13 +88,52 @@ text_direction_codepoint_in_literal = \"warn\"
     p.cargo("check -Zcargo-lints")
         .masquerade_as_nightly_cargo(&["cargo-lints"])
         .with_stderr_data(str![[r#"
-[WARNING] unknown lint: `text_direction_codepoint_in_literal`
-  --> Cargo.toml:14:1
-   |
-14 | text_direction_codepoint_in_literal = "warn"
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = [NOTE] `cargo::unknown_lints` is set to `warn` by default
+[WARNING] unicode codepoint changing visible direction of text present in literal
+ --> Cargo.toml:7:18
+  |
+7 | description = "a �description� here"  # this is a �tricky� comment
+  |               ---^-----------^------
+  |               |  |           |
+  |               |  |           "/u{202a}"
+  |               |  "/u{202e}"
+  |               this literal contains an invisible unicode text flow control codepoint
+  |
+  = [NOTE] `cargo::text_direction_codepoint_in_literal` is set to `warn` in `[lints]`
+[HELP] if you want to keep them but make them visible in your source code, you can escape them
+  |
+7 - description = "a �description� here"  # this is a �tricky� comment
+7 + description = "a /u{202E}description/u{202A} here"  # this is a �tricky� comment
+  |
+[WARNING] unicode codepoint changing visible direction of text present in literal
+ --> Cargo.toml:8:15
+  |
+8 | homepage = "a �homepage� there"  # this is a �tricky� comment
+  |            ---^--------^-------
+  |            |  |        |
+  |            |  |        "/u{202a}"
+  |            |  "/u{202e}"
+  |            this literal contains an invisible unicode text flow control codepoint
+  |
+[HELP] if you want to keep them but make them visible in your source code, you can escape them
+  |
+8 - homepage = "a �homepage� there"  # this is a �tricky� comment
+8 + homepage = "a /u{202E}homepage/u{202A} there"  # this is a �tricky� comment
+  |
+[WARNING] unicode codepoint changing visible direction of text present in literal
+ --> Cargo.toml:9:17
+  |
+9 | repository = "a �repository� everywhere"  # this is a �tricky� comment
+  |              ---^----------^------------
+  |              |  |          |
+  |              |  |          "/u{202a}"
+  |              |  "/u{202e}"
+  |              this literal contains an invisible unicode text flow control codepoint
+  |
+[HELP] if you want to keep them but make them visible in your source code, you can escape them
+  |
+9 - repository = "a �repository� everywhere"  # this is a �tricky� comment
+9 + repository = "a /u{202E}repository/u{202A} everywhere"  # this is a �tricky� comment
+  |
 [CHECKING] foo v0.0.1 ([ROOT]/foo)
 [FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 
@@ -143,13 +175,6 @@ edition = \"2015\"
     p.cargo("check -Zcargo-lints")
         .masquerade_as_nightly_cargo(&["cargo-lints"])
         .with_stderr_data(str![[r#"
-[WARNING] unknown lint: `text_direction_codepoint_in_literal`
-  --> Cargo.toml:17:1
-   |
-17 | text_direction_codepoint_in_literal = "warn"
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = [NOTE] `cargo::unknown_lints` is set to `warn` by default
 [WARNING] unicode codepoint changing visible direction of text present in comment
   --> Cargo.toml:10:51
    |
@@ -179,6 +204,52 @@ edition = \"2015\"
    |                                           |           |      "/u{202c}"
    |                                           |           "/u{202b}"
    |                                           this comment contains an invisible unicode text flow control codepoint
+[WARNING] unicode codepoint changing visible direction of text present in literal
+  --> Cargo.toml:10:18
+   |
+10 | description = "a �description� here"  # this is a �tricky� comment
+   |               ---^-----------^------
+   |               |  |           |
+   |               |  |           "/u{202a}"
+   |               |  "/u{202e}"
+   |               this literal contains an invisible unicode text flow control codepoint
+   |
+   = [NOTE] `cargo::text_direction_codepoint_in_literal` is set to `warn` in `[lints]`
+[HELP] if you want to keep them but make them visible in your source code, you can escape them
+   |
+10 - description = "a �description� here"  # this is a �tricky� comment
+10 + description = "a /u{202E}description/u{202A} here"  # this is a �tricky� comment
+   |
+[WARNING] unicode codepoint changing visible direction of text present in literal
+  --> Cargo.toml:11:15
+   |
+11 | homepage = "a �homepage� there"  # this is a �tricky� comment
+   |            ---^--------^-------
+   |            |  |        |
+   |            |  |        "/u{202a}"
+   |            |  "/u{202e}"
+   |            this literal contains an invisible unicode text flow control codepoint
+   |
+[HELP] if you want to keep them but make them visible in your source code, you can escape them
+   |
+11 - homepage = "a �homepage� there"  # this is a �tricky� comment
+11 + homepage = "a /u{202E}homepage/u{202A} there"  # this is a �tricky� comment
+   |
+[WARNING] unicode codepoint changing visible direction of text present in literal
+  --> Cargo.toml:12:17
+   |
+12 | repository = "a �repository� everywhere"  # this is a �tricky� comment
+   |              ---^----------^------------
+   |              |  |          |
+   |              |  |          "/u{202a}"
+   |              |  "/u{202e}"
+   |              this literal contains an invisible unicode text flow control codepoint
+   |
+[HELP] if you want to keep them but make them visible in your source code, you can escape them
+   |
+12 - repository = "a �repository� everywhere"  # this is a �tricky� comment
+12 + repository = "a /u{202E}repository/u{202A} everywhere"  # this is a �tricky� comment
+   |
 [CHECKING] foo v0.0.1 ([ROOT]/foo)
 [FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 
@@ -229,13 +300,6 @@ workspace = true
     p.cargo("check -Zcargo-lints")
         .masquerade_as_nightly_cargo(&["cargo-lints"])
         .with_stderr_data(str![[r#"
-[WARNING] unknown lint: `text_direction_codepoint_in_literal`
-  --> Cargo.toml:12:1
-   |
-12 | text_direction_codepoint_in_literal = "warn"
-   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = [NOTE] `cargo::unknown_lints` is set to `warn` by default
 [WARNING] unicode codepoint changing visible direction of text present in comment
  --> Cargo.toml:6:51
   |
@@ -265,6 +329,52 @@ workspace = true
   |                                           |           |      "/u{202c}"
   |                                           |           "/u{202b}"
   |                                           this comment contains an invisible unicode text flow control codepoint
+[WARNING] unicode codepoint changing visible direction of text present in literal
+ --> Cargo.toml:6:18
+  |
+6 | description = "a �description� here"  # this is a �tricky� comment
+  |               ---^-----------^------
+  |               |  |           |
+  |               |  |           "/u{202a}"
+  |               |  "/u{202e}"
+  |               this literal contains an invisible unicode text flow control codepoint
+  |
+  = [NOTE] `cargo::text_direction_codepoint_in_literal` is set to `warn` in `[lints]`
+[HELP] if you want to keep them but make them visible in your source code, you can escape them
+  |
+6 - description = "a �description� here"  # this is a �tricky� comment
+6 + description = "a /u{202E}description/u{202A} here"  # this is a �tricky� comment
+  |
+[WARNING] unicode codepoint changing visible direction of text present in literal
+ --> Cargo.toml:7:15
+  |
+7 | homepage = "a �homepage� there"  # this is a �tricky� comment
+  |            ---^--------^-------
+  |            |  |        |
+  |            |  |        "/u{202a}"
+  |            |  "/u{202e}"
+  |            this literal contains an invisible unicode text flow control codepoint
+  |
+[HELP] if you want to keep them but make them visible in your source code, you can escape them
+  |
+7 - homepage = "a �homepage� there"  # this is a �tricky� comment
+7 + homepage = "a /u{202E}homepage/u{202A} there"  # this is a �tricky� comment
+  |
+[WARNING] unicode codepoint changing visible direction of text present in literal
+ --> Cargo.toml:8:17
+  |
+8 | repository = "a �repository� everywhere"  # this is a �tricky� comment
+  |              ---^----------^------------
+  |              |  |          |
+  |              |  |          "/u{202a}"
+  |              |  "/u{202e}"
+  |              this literal contains an invisible unicode text flow control codepoint
+  |
+[HELP] if you want to keep them but make them visible in your source code, you can escape them
+  |
+8 - repository = "a �repository� everywhere"  # this is a �tricky� comment
+8 + repository = "a /u{202E}repository/u{202A} everywhere"  # this is a �tricky� comment
+  |
 [CHECKING] bar v0.0.1 ([ROOT]/foo/bar)
 [FINISHED] `dev` profile [unoptimized + debuginfo] target(s) in [ELAPSED]s
 

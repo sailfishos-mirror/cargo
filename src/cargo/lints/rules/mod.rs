@@ -10,6 +10,7 @@ mod non_snake_case_packages;
 mod redundant_homepage;
 mod redundant_readme;
 mod text_direction_codepoint_in_comment;
+mod text_direction_codepoint_in_literal;
 mod unknown_lints;
 pub mod unused_dependencies;
 mod unused_workspace_dependencies;
@@ -28,6 +29,7 @@ pub use non_snake_case_packages::non_snake_case_packages;
 pub use redundant_homepage::redundant_homepage;
 pub use redundant_readme::redundant_readme;
 pub use text_direction_codepoint_in_comment::text_direction_codepoint_in_comment;
+pub use text_direction_codepoint_in_literal::text_direction_codepoint_in_literal;
 pub use unknown_lints::output_unknown_lints;
 pub use unused_dependencies::unused_build_dependencies_no_build_rs;
 pub use unused_workspace_dependencies::unused_workspace_dependencies;
@@ -46,6 +48,7 @@ pub static LINTS: &[&crate::lints::Lint] = &[
     redundant_homepage::LINT,
     redundant_readme::LINT,
     text_direction_codepoint_in_comment::LINT,
+    text_direction_codepoint_in_literal::LINT,
     unknown_lints::LINT,
     unused_dependencies::LINT,
     unused_workspace_dependencies::LINT,
